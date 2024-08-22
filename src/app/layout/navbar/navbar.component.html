@@ -1,0 +1,35 @@
+<div class="navbar bg-base-300 flex justify-between items-center h-16">
+    <!-- Logo with Link -->
+    <a routerLink="/home" class="btn btn-ghost align-middle">
+        @if ((currentTheme$ | async) === 'dark') {
+        <img src="./logo_light.svg" class="h-12 object-contain" alt="Logo Light Mode" />
+        } @else {
+        <img src="./logo_dark.svg" class="h-12 object-contain" alt="Logo Dark Mode" />
+        }
+    </a>
+
+    <!-- Title in the Center -->
+    <div class="text-xl font-semibold">Walkup Beats</div>
+
+    <!-- Theme Toggle and User Menu -->
+    <div class="flex items-center">
+        <label class="swap swap-rotate pr-6">
+            <input type="checkbox" [checked]="(currentTheme$ | async) === 'dark'" (change)="toggleTheme()" />
+            <!-- sun icon -->
+            <i class="swap-off bi bi-sun" style="font-size: 1.5rem;"></i>
+            <!-- moon icon -->
+            <i class="swap-on bi bi-moon" style="font-size: 1.5rem;"></i>
+        </label>
+
+        @if (authService.isLoggedIn()) {
+        <details class="dropdown dropdown-end">
+            <summary class="btn btn-ghost m-1 p-0">
+                <i class="bi bi-person" style="font-size: 1.5rem;"></i>
+            </summary>
+            <ul class="menu dropdown-content bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+                <li><button class="btn btn-sm btn-secondary" (click)="logout()">Logout</button></li>
+            </ul>
+        </details>
+        }
+    </div>
+</div>

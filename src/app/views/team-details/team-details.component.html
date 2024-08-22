@@ -1,0 +1,226 @@
+@if (!teamLoading) {
+
+<div class="flex justify-between px-5 py-10 mt-20">
+    <div class="breadcrumbs text-sm">
+        <ul>
+            <li><a class="btn" routerLink="/home"><i class="bi bi-arrow-left" style="font-size: 1.5rem;"></i></a></li>
+            <!-- <li class="hidden md:inline">{{teamName}}</li> -->
+        </ul>
+    </div>
+
+    <div class="flex justify-center py-5">
+        <div class="avatar">
+            <div class="ring-primary ring-offset-base-100 w-20 rounded-full ring ring-offset-2">
+                <img src="{{teamLogoUrl}}" />
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn m-1"><i class="bi bi-three-dots-vertical"
+                    style="font-size: 1.5rem;"></i></div>
+            <ul tabindex="0" class="dropdown-content card card-compact bg-gray-300 z-[1] w-56 p-2 shadow">
+                <li><button class="btn btn-ghost text-black" (click)="editTeam()">Edit Team Details</button></li>
+                <li><button class="btn btn-ghost text-red-500" (click)="confirmDelete('team')"><i
+                            class="bi bi-trash3-fill"></i> Delete Team</button></li>
+            </ul>
+        </div>
+    </div>
+</div>
+}
+@else {
+<div class="text-center py-3 mt-20">
+    <progress class="progress w-56 mb-2"></progress>
+    <p>Loading Team info...</p>
+</div>
+}
+
+
+<div class="overflow-x-auto overflow-y-auto px-5">
+    @if(!playersLoading) {
+    <table class="table text-center pt-5">
+        <thead>
+            <tr>
+                <th></th>
+                <th (click)="sort('name')">
+                    Name
+                    <i *ngIf="sortColumn === 'name'" [class.bi-arrow-up]="sortDirection === 'asc'"
+                        [class.bi-arrow-down]="sortDirection === 'desc'" class="bi"></i>
+                </th>
+                <th (click)="sort('jerseyNumber')">
+                    Name
+                    <i *ngIf="sortColumn === 'jerseyNumber'" [class.bi-arrow-up]="sortDirection === 'asc'"
+                        [class.bi-arrow-down]="sortDirection === 'desc'" class="bi"></i>
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (players.length > 0) {
+            @for (player of players; track player.id) {
+            <tr>
+                <td>
+                    <button class="btn" (click)="editPlayer(player)"><i class="bi bi-three-dots"></i></button>
+                </td>
+                <td>{{player.name}}</td>
+                <td>{{player.jerseyNumber}}</td>
+                <td class="p-2">
+                    @if (player.audioFile) {
+                    <div class="flex justify-center items-center">
+                        <button class="btn w-full sm:w-auto"
+                            [ngClass]="isPlaying(player.id) ? 'btn-error' : 'btn-success'" (click)="toggleSong(player)">
+                            <i [ngClass]="isPlaying(player.id) ? 'bi bi-stop-fill' : 'bi bi-play-fill'"
+                                style="font-size: 1.5rem;"></i>
+                        </button>
+                    </div>
+                    }
+                    @else {
+                    <p>No file found</p>
+                    <button class="btn btn-sm btn-ghost" (click)="editPlayer(player)">
+                        <i class="bi bi-plus" style="font-size: 1.25rem;"></i>
+                    </button>
+
+                    }
+                </td>
+            </tr>
+            }
+            }
+            @else {
+            <tr>
+                <td colspan="4">No players found.</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+    } @else {
+    <div class="my-20 text-center">
+        <span class="loading loading-ring loading-lg"></span>
+        <p>Loading members...</p>
+    </div>
+    }
+</div>
+
+<div class="fixed bottom-5 right-4">
+    <button class="btn btn-primary font-bold rounded-full shadow-lg" onclick="player_modal.showModal()">
+        <i class="bi bi-person-plus-fill" style="font-size: 1.5rem;"></i>
+    </button>
+</div>
+
+<!-- Confirm Delete dialog -->
+<dialog id="confirm_delete_modal" class="modal">
+    <div class="modal-box">
+        <h3 class="text-lg font-bold">Confirm</h3>
+        <p class="py-4">{{deleteMessage}}</p>
+        <form method="dialog" class="mt-6 pt-6">
+            <div class="flex justify-between items-center absolute bottom-6 left-6 right-6">
+                <button class="btn btn-outline">Cancel</button>
+                <button class="btn btn-error" (click)="executeDelete()">Delete</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- Player Modal -->
+<dialog id="player_modal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box">
+        <form [formGroup]="playerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+            <div>
+                <h5 class="text-lg font-semibold mb-2">Player Name</h5>
+                <input type="text" formControlName="name"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div>
+                <h5 class="text-lg font-semibold mb-2">Jersey Number</h5>
+                <input type="text" formControlName="jerseyNumber"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div>
+                <h5 class="text-lg font-semibold mb-2">Song</h5>
+                @if (selectedPlayer) {
+                <div class="mb-3">
+                    <strong>Current audio file:</strong> {{selectedPlayer.audioFile}}
+                </div>
+                }
+                <input type="file" name="audioFile" (change)="onFileSelectedPlayer($event)" accept="audio/*"
+                    class="file-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="flex justify-between mt-5 pt-5">
+                <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                    (click)="onCancel()">
+                    Cancel
+                </button>
+
+                @if (selectedPlayer) {
+                <button type="submit" [disabled]="!playerForm.dirty && !playerForm.get('audioFile')?.value"
+                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
+                    Update
+                </button>
+                }
+                @else {
+                <button type="submit" [disabled]="playerForm.get('name')?.invalid"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
+                    Submit
+                </button>
+                }
+            </div>
+
+            @if (selectedPlayer) {
+            <div class="mt-8 pt-4 border-t border-gray-200 text-center">
+                <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                    (click)="confirmDelete('player')">
+                    <i class="bi bi-trash3-fill" style="font-size: 1.25rem;"></i>
+                </button>
+            </div>
+            }
+        </form>
+    </div>
+</dialog>
+
+<!-- Team dialog -->
+<dialog id="team_modal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box">
+        <form [formGroup]="teamForm" (ngSubmit)="updateTeam()" class="space-y-4">
+            <div>
+                <h5 class="text-lg font-semibold mb-2">Team Name</h5>
+                <input type="text" formControlName="name"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div>
+                <h5 class="text-lg font-semibold mb-2">Logo</h5>
+                <input type="file" name="logo" (change)="onFileSelectedTeam($event)" accept=".jpg,.jpeg,.png,.gif,.webp"
+                    class="file-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="flex justify-between mt-6">
+                <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                    (click)="closeTeamDialog()">
+                    Cancel
+                </button>
+
+                <button type="submit" [disabled]="teamForm.get('name')?.invalid"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
+                    Submit
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<div class="toast toast-center">
+    @if (errorMessage) {
+    <div class="alert alert-error">
+        <span>{{errorMessage}}</span>
+    </div>
+    }
+
+    @if (successMessage) {
+    <div class="alert alert-success">
+        <span>{{successMessage}}</span>
+    </div>
+    }
+</div>
