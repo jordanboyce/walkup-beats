@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "site": "walkupbeats",
+    "public": "dist/walkup-beats-ui/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

@@ -1,31 +1,31 @@
-<div class="flex flex-col gap-2 items-center justify-center min-h-screen">
-    <div class="w-full max-w-md p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold text-center mb-6">Forgot Password</h2>
-        <form [formGroup]="forgotForm">
+<div class="flex flex-col gap-4 items-center justify-start min-h-screen pt-12 mt-20 px-4">
+    <div class="w-full max-w-md p-6 rounded-lg shadow-md bg-base-100">
+        <h2 class="text-2xl font-bold text-center mb-4">Forgot Password</h2>
+        <form [formGroup]="forgotForm" class="w-full">
             <div class="mb-4">
                 <label for="email" class="block text-sm font-bold mb-2">Email Address</label>
                 <input type="email" id="email" name="email" class="input input-bordered w-full" formControlName="email"
                     placeholder="Enter your email" required>
             </div>
             <div class="flex items-center justify-between">
-                @if (!isLoading) {
                 <button type="submit" class="btn btn-primary w-full" [disabled]="forgotForm.invalid"
-                    (click)="sendForgotPassword()">Submit</button>
-                } @else {
-                <button class="btn btn-primary w-full" [disabled]="forgotForm.invalid">
+                    (click)="sendForgotPassword()">
+                    @if (!isLoading) {
+                    <span>Submit</span>
+                    } @else {
                     <span class="loading loading-spinner">loading</span>
+                    }
                 </button>
-                }
             </div>
         </form>
-        <p class="mt-6 text-center text-sm">
+        <p class="mt-4 text-center text-sm">
             Remembered your password?
             <a href="" class="text-primary hover:underline">Log in</a>
         </p>
     </div>
 
     @if (showMessage) {
-    <div role="alert" class="alert max-w-md">
+    <div role="alert" class="alert max-w-md mt-4">
         <i class="bi bi-check" style="font-size: 1.5rem;"></i>
         <span>If you are a registered user, you should see an email from us.</span>
         <div>
