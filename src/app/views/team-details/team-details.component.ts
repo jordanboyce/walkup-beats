@@ -4,6 +4,7 @@ import { DataService } from '../../services/data.service';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-team-details',
@@ -43,7 +44,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     private dataService: DataService,
     private router: Router,
     private fb: FormBuilder,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    public authService: AuthService
   ) {
     this.playerForm = this.fb.group({
       name: ['', Validators.required],

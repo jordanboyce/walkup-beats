@@ -11,6 +11,6 @@ export const routes: Routes = [
     { path: '', component: LandingComponent, canActivate: [AlreadyLoggedInGuard] },
     { path: 'forgot', component: ForgotComponent, canActivate: [AlreadyLoggedInGuard] },
     { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
-    { path: 'details/:id', component: TeamDetailsComponent, canActivate: [AuthGuard] },
+    { path: ':teamName/:id', component: TeamDetailsComponent },
     { path: '**', component: NotFoundComponent }
 ];

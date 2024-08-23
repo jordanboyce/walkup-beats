@@ -88,8 +88,8 @@ export class HomeComponent implements OnInit {
     return `${this.baseUrl}api/files/teams/${teamId}/${filename}`;
   }
 
-  navToDetails(teamId: string) {
-    this.router.navigate(['/details', teamId]);
+  navToDetails(teamName: string, teamId: string) {
+    this.router.navigate([teamName, teamId]);
   }
 
   onFileSelected(event: any): void {

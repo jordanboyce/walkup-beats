@@ -12,7 +12,7 @@
         <tbody>
             @if (!isLoading) {
             @for (team of teams; track $index) {
-            <tr (click)="navToDetails(team.id)" class="hover:bg-base-300">
+            <tr (click)="navToDetails(team.name, team.id)" class="hover:bg-base-300">
                 <td [width]="20">
                     <div class="avatar">
                         <div class="ring-primary ring-offset-base-100 w-12 rounded-full ring ring-offset-2">
