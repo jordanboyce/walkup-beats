@@ -108,7 +108,7 @@
 </div>
 
 <!-- Confirm Delete dialog -->
-<dialog id="confirm_delete_modal" class="modal modal-middle sm:modal-top">
+<dialog id="confirm_delete_modal" class="modal modal-top">
     <div class="modal-box">
         <h3 class="text-lg font-bold">Confirm</h3>
         <p class="py-4">{{deleteMessage}}</p>
@@ -122,7 +122,7 @@
 </dialog>
 
 <!-- Player Modal -->
-<dialog id="player_modal" class="modal modal-middle sm:modal-top">
+<dialog id="player_modal" class="modal modal-top">
     <div class="modal-box">
         <form [formGroup]="playerForm" (ngSubmit)="onSubmit()" class="space-y-4">
             <div>
@@ -181,7 +181,7 @@
 </dialog>
 
 <!-- Team dialog -->
-<dialog id="team_modal" class="modal modal-middle sm:modal-top">
+<dialog id="team_modal" class="modal modal-top">
     <div class="modal-box">
         <form [formGroup]="teamForm" (ngSubmit)="updateTeam()" class="space-y-4">
             <div>
