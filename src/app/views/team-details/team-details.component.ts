@@ -15,6 +15,7 @@ import { TextToSpeechService } from '../../services/text-to-speech.service';
   styleUrl: './team-details.component.scss'
 })
 export class TeamDetailsComponent implements OnInit, OnDestroy {
+  isLoading: boolean = false;
   players: any[] = [];
   selectedPlayer: any;
   teamId: string = '';
@@ -39,6 +40,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   deleteMessage: string = '';
   pendingDeleteAction: (() => void) | null = null;
 
+  showPhonetic: boolean = false;
+
   private messageTimeout: any;
 
   constructor(
@@ -52,8 +55,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   ) {
     this.playerForm = this.fb.group({
       name: ['', Validators.required],
+      pronunciation: [null], // Phonetic name field added here
       jerseyNumber: [null],
-      introFile: [null],
       songFile: [null]
     });
 
@@ -94,6 +97,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     this.playersLoading = true;
     this.dataService.getTeamPlayers(this.teamId).subscribe({
       next: (res: any) => {
+        console.log(res);
         this.players = res.map((player: any) => ({
           ...player,
           introUrl: this.getFullAudioUrl(player.id, player.introFile),
@@ -202,19 +206,19 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     if (this.currentAudio) {
       this.stopSong();
     }
-  
+
     // Play the intro audio first
     const introAudio = new Audio(player.introUrl);
     this.currentPlayingPlayerId = player.id;
     introAudio.play();
-  
+
     // When the intro audio ends, play the song
     introAudio.onended = () => {
       const songAudio = new Audio(player.songUrl);
       this.currentAudio = songAudio;
       songAudio.play();
     };
-  
+
     this.currentAudio = introAudio;
   }
 
@@ -264,9 +268,15 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
   editPlayer(player: any) {
     this.selectedPlayer = player;
+
+    if (this.selectedPlayer.pronunciation !== '') {
+      this.showPhonetic = true;
+    }
+
     // Populate the form with existing player data
     this.playerForm.patchValue({
       name: player.name,
+      pronunciation: player.pronunciation,
       jerseyNumber: player.jerseyNumber,
     });
 
@@ -332,14 +342,22 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    console.log(this.playerForm.value);
     if (this.playerForm.valid) {
+      this.isLoading = true;
+
       const playerName = this.playerForm.get('name')?.value;
+      const pronunciation = this.playerForm.get('pronunciation')?.value;
       const playerNumber = this.playerForm.get('jerseyNumber')?.value;
 
+      // Use pronunciation if provided, otherwise fall back to playerName
+      const textToSpeak = pronunciation && pronunciation.trim() !== '' ? pronunciation : playerName;
+
       // Step 1: Generate the TTS audio for the player
-      this.createPlayerAudio(playerName, playerNumber).then((audioBlob: Blob) => {
+      this.createPlayerAudio(textToSpeak, playerNumber).then((audioBlob: Blob) => {
         const formData = new FormData();
         formData.append('name', playerName);
+        formData.append('pronunciation', pronunciation);
         formData.append('jerseyNumber', playerNumber);
         formData.append('teamId', this.teamId);
 
@@ -362,6 +380,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
           this.dataService.updatePlayer(this.selectedPlayer.id, formData).subscribe({
             next: (res: any) => {
               this.getTeamPlayers();
+              this.isLoading = false;
               modal.close();
               this.resetFormAndFileInput();
               this.selectedPlayer = null;
@@ -370,6 +389,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
             error: (err: any) => {
               console.error('Error updating player: ', err);
               this.showMessage('Player could not be updated.', true);
+              this.isLoading = false;
             }
           });
         } else {
@@ -377,20 +397,23 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
           this.dataService.createPlayer(formData).subscribe({
             next: (res: any) => {
               this.getTeamPlayers();
+              this.isLoading = false;
               modal.close();
               this.resetFormAndFileInput();
               this.selectedPlayer = null;
               this.showMessage('Player created successfully.');
             },
             error: (err: any) => {
-              console.error("Error creating player: ", err)
+              console.error("Error creating player: ", err);
               this.showMessage('Player could not be created', true);
+              this.isLoading = false;
             }
           });
         }
       }).catch((error) => {
         console.error('Error generating player audio:', error);
         this.showMessage('Player could not be created due to audio generation error.', true);
+        this.isLoading = false;
       });
     }
   }
