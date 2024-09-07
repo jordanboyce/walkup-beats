@@ -33,13 +33,11 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
    this.getTeamsList();
    this.checkUser();
-     
   }
 
   checkUser() {
     this.authService.refreshAuth();
     this.currUser = this.authService.getCurrentUser();
-    console.log(this.currUser);
 
     if(!this.currUser.verified) {
       console.log('send verify email');

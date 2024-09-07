@@ -14,7 +14,6 @@ export class TextToSpeechService {
   constructor(private http: HttpClient) {}
 
   streamTextToSpeech(name: string, number: string): Observable<Blob> {
-    console.log(this.apiKey);
     const fullText = "Now batting... Number " + number + "! .." + name + "!";
     const headers = new HttpHeaders({
       'Accept': 'application/json',

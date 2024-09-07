@@ -94,7 +94,6 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     this.playersLoading = true;
     this.dataService.getTeamPlayers(this.teamId).subscribe({
       next: (res: any) => {
-        console.log(res);
         this.players = res.map((player: any) => ({
           ...player,
           introUrl: this.getFullAudioUrl(player.id, player.introFile),
