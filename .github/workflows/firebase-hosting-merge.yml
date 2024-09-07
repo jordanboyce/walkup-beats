@@ -11,12 +11,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Clean npm cache to avoid build issues
+      - name: Clean npm cache
+        run: npm cache clean --force
+
       # Install dependencies
       - run: npm ci
 
       # Install envsubst for variable substitution
       - name: Install gettext (for envsubst)
-        run: sudo apt-get install gettext
+        run: sudo apt-get install -y gettext
 
       # Inject the API key into the environment.ts file
       - name: Set API key in environment.ts
@@ -24,6 +28,10 @@ jobs:
           cat src/environments/environment.ts | envsubst > src/environments/environment.ts
         env:
           ELEVEN_LABS_API_KEY: ${{ secrets.ELEVEN_LABS_API_KEY }}
+
+      # Output the environment.ts file to verify the API key substitution
+      - name: Output environment.ts
+        run: cat src/environments/environment.ts
 
       # Build the project after setting the API key
       - run: npm run build --prod
