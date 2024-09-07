@@ -1,4 +1,4 @@
 export const environment = {
     production: false,
-    elevenLabsApiKey: '',
+    elevenLabsApiKey: '${ELEVEN_LABS_API_KEY}',
 };

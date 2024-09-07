@@ -22,15 +22,15 @@ jobs:
       - name: Install gettext (for envsubst)
         run: sudo apt-get install -y gettext
 
-      # Inject the API key into the environment.ts file
+      # Inject the API key into the environment.prod.ts file
       - name: Set API key in environment.prod.ts
         run: |
           cat src/environments/environment.prod.ts | envsubst > src/environments/environment.prod.ts
         env:
           ELEVEN_LABS_API_KEY: ${{ secrets.ELEVEN_LABS_API_KEY }}
 
-      # Output the environment.ts file to verify the API key substitution
-      - name: Output environment.ts
+      # Output the environment.prod.ts file to verify the API key substitution
+      - name: Output environment.prod.ts
         run: cat src/environments/environment.prod.ts
 
       # Build the project after setting the API key
