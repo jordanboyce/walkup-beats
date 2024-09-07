@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "set-api-key": "sed -i 's/\"elevenLabsApiKey\": \"\"/\"elevenLabsApiKey\": \"'${ELEVEN_LABS_API_KEY}'\"/' src/environments/environment.prod.ts"
   },
   "private": true,
   "dependencies": {

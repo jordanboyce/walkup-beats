@@ -71,7 +71,7 @@
                 <td>{{player.name}}</td>
                 <td>{{player.jerseyNumber}}</td>
                 <td class="p-2">
-                    @if (player.audioFile) {
+                    @if (player.songFile) {
                     <div class="flex justify-center items-center">
                         <button class="btn w-full sm:w-auto"
                             [ngClass]="isPlaying(player.id) ? 'btn-error' : 'btn-success'" (click)="toggleSong(player)">
@@ -148,10 +148,10 @@
                 <h5 class="text-lg font-semibold mb-2">Song</h5>
                 @if (selectedPlayer) {
                 <div class="mb-3">
-                    <strong>Current audio file:</strong> {{selectedPlayer.audioFile}}
+                    <small><strong>Current audio file:</strong> {{selectedPlayer.songFile}}</small>
                 </div>
                 }
-                <input type="file" name="audioFile" (change)="onFileSelectedPlayer($event)" accept="audio/*"
+                <input type="file" name="songFile" (change)="onFileSelectedPlayer($event)" accept="audio/*"
                     class="file-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
@@ -162,7 +162,7 @@
                 </button>
 
                 @if (selectedPlayer) {
-                <button type="submit" [disabled]="!playerForm.dirty && !playerForm.get('audioFile')?.value"
+                <button type="submit" [disabled]="!playerForm.dirty && !playerForm.get('songFile')?.value"
                     class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
                     Update
                 </button>
@@ -220,13 +220,13 @@
 
 <div class="toast toast-center">
     @if (errorMessage) {
-    <div class="alert alert-error">
+    <div class="alert alert-error text-center">
         <span>{{errorMessage}}</span>
     </div>
     }
 
     @if (successMessage) {
-    <div class="alert alert-success">
+    <div class="alert alert-success text-center">
         <span>{{successMessage}}</span>
     </div>
     }

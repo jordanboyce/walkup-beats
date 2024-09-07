@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { TextToSpeechService } from '../../services/text-to-speech.service';
 
 @Component({
   selector: 'app-team-details',
@@ -25,6 +26,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   teamForm: FormGroup;
   teamLoading: boolean = false;
   playersLoading: boolean = false;
+  playerAudio: string = '';
 
   currentLogo: string | null = null;
   teamLogoUrl: any;
@@ -42,6 +44,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private dataService: DataService,
+    private textToSpeechService: TextToSpeechService,
     private router: Router,
     private fb: FormBuilder,
     private cd: ChangeDetectorRef,
@@ -50,7 +53,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     this.playerForm = this.fb.group({
       name: ['', Validators.required],
       jerseyNumber: [null],
-      audioFile: [null]
+      introFile: [null],
+      songFile: [null]
     });
 
     this.teamForm = this.fb.group({
@@ -90,9 +94,11 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     this.playersLoading = true;
     this.dataService.getTeamPlayers(this.teamId).subscribe({
       next: (res: any) => {
+        console.log(res);
         this.players = res.map((player: any) => ({
           ...player,
-          audioUrl: this.getFullAudioUrl(player.id, player.audioFile)
+          introUrl: this.getFullAudioUrl(player.id, player.introFile),
+          songUrl: this.getFullAudioUrl(player.id, player.songFile)
         }));
         this.playersLoading = false;
       },
@@ -197,9 +203,20 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     if (this.currentAudio) {
       this.stopSong();
     }
-    this.currentAudio = new Audio(player.audioUrl);
-    this.currentAudio.play();
+  
+    // Play the intro audio first
+    const introAudio = new Audio(player.introUrl);
     this.currentPlayingPlayerId = player.id;
+    introAudio.play();
+  
+    // When the intro audio ends, play the song
+    introAudio.onended = () => {
+      const songAudio = new Audio(player.songUrl);
+      this.currentAudio = songAudio;
+      songAudio.play();
+    };
+  
+    this.currentAudio = introAudio;
   }
 
   stopSong() {
@@ -223,10 +240,10 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
         return;
       }
       this.playerForm.patchValue({
-        audioFile: file
+        songFile: file
       });
 
-      this.playerForm.get('audioFile')?.markAsDirty();
+      this.playerForm.get('songFile')?.markAsDirty();
     }
   }
 
@@ -317,49 +334,85 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.playerForm.valid) {
-      const formData = new FormData();
-      formData.append('name', this.playerForm.get('name')?.value);
-      formData.append('jerseyNumber', this.playerForm.get('jerseyNumber')?.value);
-      formData.append('teamId', this.teamId);
+      const playerName = this.playerForm.get('name')?.value;
+      const playerNumber = this.playerForm.get('jerseyNumber')?.value;
 
-      const audioFile = this.playerForm.get('audioFile')?.value;
-      if (audioFile) {
-        formData.append('audioFile', audioFile);
-      }
+      // Step 1: Generate the TTS audio for the player
+      this.createPlayerAudio(playerName, playerNumber).then((audioBlob: Blob) => {
+        const formData = new FormData();
+        formData.append('name', playerName);
+        formData.append('jerseyNumber', playerNumber);
+        formData.append('teamId', this.teamId);
 
-      const modal = document.getElementById('player_modal') as HTMLDialogElement;
+        // Append the generated TTS audio to FormData
+        if (audioBlob) {
+          const audioFile = new File([audioBlob], `${playerName}-intro.mp3`, { type: 'audio/mpeg' });
+          formData.append('introFile', audioFile);
+        }
 
-      if (this.selectedPlayer) {
-        this.dataService.updatePlayer(this.selectedPlayer.id, formData).subscribe({
-          next: (res: any) => {
-            this.getTeamPlayers();
-            modal.close();
-            this.resetFormAndFileInput();
-            this.selectedPlayer = null;
+        // Append song file if it exists
+        const songFile = this.playerForm.get('songFile')?.value;
+        if (songFile) {
+          formData.append('songFile', songFile);
+        }
 
-            this.showMessage('Player updated successfully.');
-          },
-          error: (err: any) => {
-            console.error('Error updating player: ', err);
-            this.showMessage('Player could not be updated.', true);
-          }
-        });
-      } else {
-        this.dataService.createPlayer(formData).subscribe({
-          next: (res: any) => {
-            this.getTeamPlayers();
-            modal.close();
-            this.resetFormAndFileInput();
-            this.selectedPlayer = null;
-            this.showMessage('Player created successfully.');
-          },
-          error: (err: any) => {
-            console.error("Error creating player: ", err)
-            this.showMessage('Player could not be created', true);
-          }
-        });
-      }
+        const modal = document.getElementById('player_modal') as HTMLDialogElement;
+
+        if (this.selectedPlayer) {
+          // Update the player if selectedPlayer is not null
+          this.dataService.updatePlayer(this.selectedPlayer.id, formData).subscribe({
+            next: (res: any) => {
+              this.getTeamPlayers();
+              modal.close();
+              this.resetFormAndFileInput();
+              this.selectedPlayer = null;
+              this.showMessage('Player updated successfully.');
+            },
+            error: (err: any) => {
+              console.error('Error updating player: ', err);
+              this.showMessage('Player could not be updated.', true);
+            }
+          });
+        } else {
+          // Create a new player
+          this.dataService.createPlayer(formData).subscribe({
+            next: (res: any) => {
+              this.getTeamPlayers();
+              modal.close();
+              this.resetFormAndFileInput();
+              this.selectedPlayer = null;
+              this.showMessage('Player created successfully.');
+            },
+            error: (err: any) => {
+              console.error("Error creating player: ", err)
+              this.showMessage('Player could not be created', true);
+            }
+          });
+        }
+      }).catch((error) => {
+        console.error('Error generating player audio:', error);
+        this.showMessage('Player could not be created due to audio generation error.', true);
+      });
     }
+  }
+
+  createPlayerAudio(playerName: string, playerNumber: string): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      this.textToSpeechService.streamTextToSpeech(playerName, playerNumber).subscribe({
+        next: (res: Blob) => {
+          resolve(res); // Resolve the Blob when the audio is successfully generated
+        },
+        error: (err: any) => {
+          console.error('Error generating audio:', err);
+          reject(err); // Reject the Promise in case of error
+        }
+      });
+    });
+  }
+
+  playAudio() {
+    const audio = new Audio(this.playerAudio);
+    audio.play();
   }
 
 
@@ -392,7 +445,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     // Reset player form
     this.playerForm.reset();
     this.playerForm.patchValue({
-      audioFile: null
+      songFile: null
     });
 
     // Reset team form
@@ -402,7 +455,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     });
 
     // Reset file inputs
-    const playerFileInput = document.querySelector('input[type="file"][name="audioFile"]') as HTMLInputElement;
+    const playerFileInput = document.querySelector('input[type="file"][name="songFile"]') as HTMLInputElement;
     const teamFileInput = document.querySelector('input[type="file"][name="logo"]') as HTMLInputElement;
 
     if (playerFileInput) {
@@ -439,7 +492,6 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  
   ngOnDestroy() {
     this.stopSong();
   }

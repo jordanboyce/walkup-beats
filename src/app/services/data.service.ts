@@ -35,7 +35,7 @@ export class DataService {
       filter: `teamId = "${teamId}"`,
       expand: 'teamId',
       sort: 'jerseyNumber',
-      fields: 'id,name,jerseyNumber,audioFile'
+      fields: 'id,name,jerseyNumber,introFile,songFile'
     }));
   }
 
