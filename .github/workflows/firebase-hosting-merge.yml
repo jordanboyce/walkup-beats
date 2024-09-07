@@ -1,4 +1,5 @@
 name: Deploy to Firebase Hosting on merge
+
 on:
   push:
     branches:
@@ -9,25 +10,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      # Clean npm cache to avoid build issues
-      - name: Clean npm cache
-        run: npm cache clean --force
+      # Cache node modules
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
 
       # Install dependencies
       - run: npm ci
 
-      # Install envsubst for variable substitution
-      - name: Install gettext (for envsubst)
-        run: sudo apt-get install -y gettext
-
       # Inject the API key into the environment.prod.ts file
       - name: Set API key in environment.prod.ts
         run: |
-          cat src/environments/environment.prod.ts | envsubst > src/environments/environment.prod.ts
-        env:
-          ELEVEN_LABS_API_KEY: ${{ secrets.ELEVEN_LABS_API_KEY }}
+          sed -i 's/\${ELEVEN_LABS_API_KEY}/${{ secrets.ELEVEN_LABS_API_KEY }}/g' src/environments/environment.prod.ts
 
       # Output the environment.prod.ts file to verify the API key substitution
       - name: Output environment.prod.ts
