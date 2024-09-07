@@ -12,16 +12,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Install dependencies and build
-      - run: npm ci && npm run build
+      # Install dependencies
+      - run: npm ci
 
       # Inject the API key into the environment.prod.ts file
       - name: Set API key in environment.prod.ts
         run: |
-          sed -i 's/"elevenLabsApiKey": ""/"elevenLabsApiKey": "'${{ secrets.ELEVEN_LABS_API_KEY }}'"/' src/environments/environment.prod.ts
+          cat src/environments/environment.prod.ts | envsubst > src/environments/environment.prod.ts
+        env:
+          ELEVEN_LABS_API_KEY: ${{ secrets.ELEVEN_LABS_API_KEY }}
 
-      # Run build after setting the API key
-      - run: npm run build
+      # Build the project after setting the API key
+      - run: npm run build --prod
 
       # Deploy to Firebase Hosting
       - uses: FirebaseExtended/action-hosting-deploy@v0
