@@ -11,7 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Install dependencies and build
       - run: npm ci && npm run build
+
+      # Inject the API key into the environment.prod.ts file
+      - name: Set API key in environment.prod.ts
+        run: |
+          sed -i 's/"elevenLabsApiKey": ""/"elevenLabsApiKey": "'${{ secrets.ELEVEN_LABS_API_KEY }}'"/' src/environments/environment.prod.ts
+
+      # Run build after setting the API key
+      - run: npm run build
+
+      # Deploy to Firebase Hosting
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
