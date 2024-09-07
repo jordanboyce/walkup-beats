@@ -39,7 +39,7 @@
 }
 
 
-<div class="overflow-x-auto overflow-y-auto px-5">
+<div class="overflow-x-auto overflow-y-auto px-5 pb-20">
     @if(!playersLoading) {
     <table class="table text-center pt-5">
         <thead>
@@ -96,6 +96,16 @@
                 <td colspan="4">No players found.</td>
             </tr>
             }
+            <!-- add player button -->
+            <tr>
+                <td colspan="4">
+                    <button
+                        class="mt-4 w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        onclick="player_modal.showModal()">
+                        <i class="bi bi-person-plus-fill" style="font-size: 1.5rem;"></i>
+                    </button>
+                </td>
+            </tr>
         </tbody>
     </table>
     } @else {
@@ -106,13 +116,13 @@
     }
 </div>
 
-@if (authService.isLoggedIn()) {
+<!-- @if (authService.isLoggedIn()) {
 <div class="fixed bottom-5 right-4">
     <button class="btn btn-primary font-bold rounded-full shadow-lg" onclick="player_modal.showModal()">
         <i class="bi bi-person-plus-fill" style="font-size: 1.5rem;"></i>
     </button>
 </div>
-}
+} -->
 
 <!-- Confirm Delete dialog -->
 <dialog id="confirm_delete_modal" class="modal modal-top">
