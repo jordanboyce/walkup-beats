@@ -16,9 +16,9 @@ jobs:
       - run: npm ci
 
       # Inject the API key into the environment.prod.ts file
-      - name: Set API key in environment.prod.ts
+      - name: Set API key in environment.ts
         run: |
-          cat src/environments/environment.prod.ts | envsubst > src/environments/environment.prod.ts
+          cat src/environments/environment.ts | envsubst > src/environments/environment.ts
         env:
           ELEVEN_LABS_API_KEY: ${{ secrets.ELEVEN_LABS_API_KEY }}
 
