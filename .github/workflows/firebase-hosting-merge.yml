@@ -34,7 +34,7 @@ jobs:
         run: cat src/environments/environment.prod.ts
 
       # Build the project after setting the API key
-      - run: npm run build --prod
+      - run: npm run build-prod
 
       # Deploy to Firebase Hosting
       - uses: FirebaseExtended/action-hosting-deploy@v0
