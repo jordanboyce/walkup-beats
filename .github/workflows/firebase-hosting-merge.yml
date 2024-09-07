@@ -23,7 +23,7 @@ jobs:
           ELEVEN_LABS_API_KEY: ${{ secrets.ELEVEN_LABS_API_KEY }}
 
       # Build the project after setting the API key
-      - run: npm run build --prod
+      - run: npm run build
 
       # Deploy to Firebase Hosting
       - uses: FirebaseExtended/action-hosting-deploy@v0
