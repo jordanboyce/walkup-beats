@@ -7,10 +7,12 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { TextToSpeechService } from '../../services/text-to-speech.service';
 
+import { OrderListModule } from 'primeng/orderlist';
+
 @Component({
   selector: 'app-team-details',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, OrderListModule],
   templateUrl: './team-details.component.html',
   styleUrl: './team-details.component.scss'
 })
