@@ -17,6 +17,10 @@ export class ForgotComponent implements OnInit {
 
   forgotForm: any;
 
+  num1: number = 0;
+  num2: number = 0;
+  captchaError: boolean = false;
+
   constructor(
     private authService: AuthService,
     private fb: FormBuilder
@@ -24,12 +28,33 @@ export class ForgotComponent implements OnInit {
 
   ngOnInit(): void {
     this.forgotForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email]],
+      captchaAnswer: ['', [Validators.required]]
     });
+
+    this.generateCaptcha();
+  }
+
+  generateCaptcha(): void {
+    this.num1 = Math.floor(Math.random() * 10) + 1;
+    this.num2 = Math.floor(Math.random() * 10) + 1;
+  }
+
+  validateCaptcha(): boolean {
+    const captchaAnswer = this.forgotForm.value.captchaAnswer;
+    return captchaAnswer == (this.num1 + this.num2);
   }
 
   sendForgotPassword() {
     this.isLoading = true;
+    if (!this.validateCaptcha()) {
+      this.captchaError = true;
+      this.generateCaptcha();
+      this.isLoading = false;
+      return;
+    }
+    this.captchaError = false;
+
     const { email } = this.forgotForm.value;
     this.authService.resetPassword(email).subscribe({
       next: () => {
