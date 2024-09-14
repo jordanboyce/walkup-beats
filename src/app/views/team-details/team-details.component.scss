@@ -1,3 +1,15 @@
 th {
     cursor: pointer;
 }
+
+
+
+::ng-deep .p-orderlist {
+    .p-orderlist-list {
+        background-color: oklch(var(--b1)) !important; /* Use Tailwind CSS variable for bg-base-100 */
+    }
+
+    .p-orderlist-controls {
+        display: none;
+    }
+}
