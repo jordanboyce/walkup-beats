@@ -24,6 +24,10 @@ export class LandingComponent implements OnInit {
   successMessage: string = '';
   private messageTimeout: any;
 
+  num1: number = 0;
+  num2: number = 0;
+  captchaError: boolean = false;
+
   constructor(private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
@@ -32,7 +36,8 @@ export class LandingComponent implements OnInit {
   ngOnInit() {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required]],
-      password: ['', [Validators.required]]
+      password: ['', [Validators.required]],
+      captchaAnswer: ['', [Validators.required]]
     });
 
     this.registerForm = this.fb.group({
@@ -40,8 +45,21 @@ export class LandingComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required, Validators.minLength(8)]]
+      confirmPassword: ['', [Validators.required, Validators.minLength(8)]],
+      captchaAnswer: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
+
+    this.generateCaptcha();
+  }
+
+  generateCaptcha(): void {
+    this.num1 = Math.floor(Math.random() * 10) + 1;
+    this.num2 = Math.floor(Math.random() * 10) + 1;
+  }
+
+  validateCaptcha(form: FormGroup): boolean {
+    const captchaAnswer = form.get('captchaAnswer')?.value;
+    return captchaAnswer == (this.num1 + this.num2);
   }
 
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -58,6 +76,14 @@ export class LandingComponent implements OnInit {
   login() {
     this.isLoading = true;
     if (this.loginForm.valid) {
+      if (!this.validateCaptcha(this.loginForm)) {
+        this.captchaError = true;
+        this.generateCaptcha();
+        this.isLoading = false;
+        return;
+      }
+      this.captchaError = false;
+
       const { email, password } = this.loginForm.value;
       this.authService.login(email, password).subscribe({
         next: (res: any) => {
@@ -78,6 +104,14 @@ export class LandingComponent implements OnInit {
   register() {
     this.isLoading = true;
     if (this.registerForm.valid) {
+      if (!this.validateCaptcha(this.registerForm)) {
+        this.captchaError = true;
+        this.generateCaptcha();
+        this.isLoading = false;
+        return;
+      }
+      this.captchaError = false;
+
       const { name, email, username, password, confirmPassword } = this.registerForm.value;
       this.authService.register(name, email, username, password, confirmPassword).subscribe({
         next: (res: any) => {
